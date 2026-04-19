@@ -1,0 +1,14 @@
+# Supabase project config. Link this project with `supabase link --project-ref <ref>`.
+project_id = "weightless"
+
+[db]
+major_version = 15
+
+[functions]
+# No JWT verification — we do our own bearer-token check in _shared/auth.ts.
+[functions.ingest]
+verify_jwt = false
+[functions.api]
+verify_jwt = false
+[functions.mcp]
+verify_jwt = false
