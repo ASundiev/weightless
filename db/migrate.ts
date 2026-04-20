@@ -4,7 +4,7 @@
 // Run locally: `deno task -c server/deno.json --allow-net --allow-env --allow-read ../db/migrate.ts`
 // CI: see .github/workflows/db-push.yml
 
-import postgres from "npm:postgres@3.4.4";
+import postgres from "postgres";
 
 const url = Deno.env.get("DATABASE_URL");
 if (!url) {

@@ -20,4 +20,4 @@ jobs:
         with:
           deno-version: v2.x
       - name: Apply migrations
-        run: deno run --allow-net --allow-env --allow-read --allow-write --allow-sys --node-modules-dir=auto db/migrate.ts
+        run: deno run --allow-net --allow-env --allow-read -c db/deno.json db/migrate.ts
