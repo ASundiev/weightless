@@ -11,6 +11,7 @@ if (!url) {
 
 export const sql = postgres(url, {
     prepare: false,
+    ssl: "require",
     max: 2,
     idle_timeout: 20,
     onnotice: () => {},
