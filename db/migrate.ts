@@ -12,7 +12,7 @@ if (!url) {
     Deno.exit(1);
 }
 
-const sql = postgres(url, { prepare: false, onnotice: () => {} });
+const sql = postgres(url, { prepare: false, ssl: "require", onnotice: () => {} });
 
 try {
     await sql`
