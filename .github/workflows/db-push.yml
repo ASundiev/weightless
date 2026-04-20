@@ -1,0 +1,23 @@
+name: Apply DB migrations
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "db/migrations/**"
+      - "db/migrate.ts"
+      - ".github/workflows/db-push.yml"
+  workflow_dispatch:
+
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Apply migrations
+        run: deno run --allow-net --allow-env --allow-read db/migrate.ts

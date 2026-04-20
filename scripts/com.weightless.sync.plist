@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd template for the Weightless sync watcher.
+
+  1. Copy this file to ~/Library/LaunchAgents/com.weightless.sync.plist
+  2. Replace /ABSOLUTE/PATH/TO/weightless with the repo path on your Mac.
+  3. Ensure scripts/sync.ts can run: `pnpm install` in the repo so tsx is available.
+  4. Load: `launchctl load ~/Library/LaunchAgents/com.weightless.sync.plist`
+     Unload: `launchctl unload ~/Library/LaunchAgents/com.weightless.sync.plist`
+
+  Logs land in /tmp/weightless-sync.log (stderr) / .out.log (stdout).
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+    "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.weightless.sync</string>
+    <key>WorkingDirectory</key>
+    <string>/ABSOLUTE/PATH/TO/weightless</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>-lc</string>
+        <string>pnpm sync</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/tmp/weightless-sync.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/weightless-sync.log</string>
+</dict>
+</plist>

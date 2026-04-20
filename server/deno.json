@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "lib": ["deno.window"],
+    "strict": true
+  },
+  "tasks": {
+    "dev": "deno run --allow-net --allow-env --allow-read --watch main.ts"
+  },
+  "imports": {
+    "postgres": "npm:postgres@3.4.4"
+  }
+}
