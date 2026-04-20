@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getToken, setToken } from "../lib/api";
+import { getFunctionsUrl, getToken, setToken } from "../lib/api";
 
 // First-run password gate. On success the token is cached in localStorage
 // and every /api call is signed with it. There is no server-side session —
@@ -21,7 +21,7 @@ export function TokenGate({ children }: { children: React.ReactNode }) {
                     // Validate by hitting a cheap tool.
                     try {
                         const res = await fetch(
-                            `${import.meta.env.VITE_FUNCTIONS_URL}/api`,
+                            `${getFunctionsUrl()}/api`,
                             {
                                 method: "POST",
                                 headers: {
