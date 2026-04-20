@@ -2,8 +2,6 @@
 //   - the local Mac sync script (POST /ingest),
 //   - the SPA (every /api call),
 //   - Claude.ai when you add the custom MCP connector.
-//
-// Returns null if authorised; otherwise a 401 Response to return directly.
 
 import { corsHeaders } from "./cors.ts";
 

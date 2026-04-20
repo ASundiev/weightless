@@ -1,5 +1,5 @@
-// Domain types shared between the SPA (Vite/Node) and Supabase Edge
-// Functions (Deno). Pure TS, no runtime deps.
+// Domain types shared between the SPA (Vite/Node) and the Deno Deploy
+// server. Pure TS, no runtime deps.
 
 export type IsoDate = string; // YYYY-MM-DD
 

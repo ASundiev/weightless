@@ -1,4 +1,4 @@
-// POST /functions/v1/ingest
+// POST /ingest
 //
 // Accepts a Health Auto Export JSON envelope:
 //   { data: { metrics: [ { name, units, data: [...] } ] } }
@@ -6,13 +6,13 @@
 // Parses it, upserts all known metrics, and rebuilds affected sleep-night
 // rollups. Idempotent: replaying the same file produces the same DB state.
 
-import { json, requireBearer } from "../_shared/auth.ts";
-import { corsHeaders, preflight } from "../_shared/cors.ts";
-import { sql } from "../_shared/db.ts";
-import { parseHae, type HaeEnvelope } from "../../../shared/hae/parser.ts";
-import { aggregateNights, datesTouched } from "../../../shared/hae/aggregate.ts";
+import { json, requireBearer } from "./_shared/auth.ts";
+import { corsHeaders, preflight } from "./_shared/cors.ts";
+import { sql } from "./_shared/db.ts";
+import { parseHae, type HaeEnvelope } from "../shared/hae/parser.ts";
+import { aggregateNights, datesTouched } from "../shared/hae/aggregate.ts";
 
-Deno.serve(async (req) => {
+export async function handler(req: Request): Promise<Response> {
     const pre = preflight(req);
     if (pre) return pre;
     if (req.method !== "POST") return json({ error: "POST only" }, 405);
@@ -37,7 +37,6 @@ Deno.serve(async (req) => {
         unknown: parsed.unknown,
     };
 
-    // Weights.
     for (const w of parsed.weights) {
         await sql`
             insert into weight_entries (date, kg, source)
@@ -46,7 +45,6 @@ Deno.serve(async (req) => {
         counts.weights++;
     }
 
-    // Sleep segments.
     if (parsed.sleepSegments.length > 0) {
         for (const s of parsed.sleepSegments) {
             await sql`
@@ -58,9 +56,6 @@ Deno.serve(async (req) => {
                     source = excluded.source`;
             counts.sleep_segments++;
         }
-        // Rebuild affected nights from the union of ingested segment dates
-        // plus all stored segments on those dates (a late-arriving segment
-        // can change the rollup).
         const touched = datesTouched(parsed.sleepSegments);
         for (const date of touched) {
             const rows = await sql<Array<{ start_ts: string; end_ts: string; stage: string; hours: number }>>`
@@ -96,7 +91,6 @@ Deno.serve(async (req) => {
         }
     }
 
-    // Activity: merge partials keyed by date.
     for (const a of parsed.activity) {
         if (!a.date) continue;
         await sql`
@@ -114,7 +108,6 @@ Deno.serve(async (req) => {
         counts.activity++;
     }
 
-    // Recovery.
     for (const r of parsed.recovery) {
         if (!r.date) continue;
         await sql`
@@ -126,7 +119,6 @@ Deno.serve(async (req) => {
         counts.recovery++;
     }
 
-    // Body composition.
     for (const b of parsed.bodyComposition) {
         if (!b.date) continue;
         await sql`
@@ -142,4 +134,4 @@ Deno.serve(async (req) => {
         status: 200,
         headers: { "content-type": "application/json", ...corsHeaders },
     });
-});
+}

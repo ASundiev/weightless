@@ -5,17 +5,17 @@
 // Keeping these here — instead of duplicating in each function — ensures
 // Claude and the UI always see the same numbers.
 
-import { addDays, todayUtcIso } from "../../../shared/dates.ts";
-import { bmi, bmiCategory } from "../../../shared/metrics/bmi.ts";
-import { correlate } from "../../../shared/metrics/correlation.ts";
-import { detectPlateau } from "../../../shared/metrics/plateau.ts";
+import { addDays, todayUtcIso } from "../../shared/dates.ts";
+import { bmi, bmiCategory } from "../../shared/metrics/bmi.ts";
+import { correlate } from "../../shared/metrics/correlation.ts";
+import { detectPlateau } from "../../shared/metrics/plateau.ts";
 import {
     type DatedValue,
     linearFit,
     projectEta,
     trailingMovingAverage,
-} from "../../../shared/metrics/trend.ts";
-import type { Experiment, IsoDate } from "../../../shared/types.ts";
+} from "../../shared/metrics/trend.ts";
+import type { Experiment, IsoDate } from "../../shared/types.ts";
 import {
     closeExperiment,
     getActivity,

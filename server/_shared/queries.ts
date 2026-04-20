@@ -2,7 +2,7 @@
 // and `mcp` functions can share them without duplicating SQL.
 
 import { sql } from "./db.ts";
-import { addDays, todayUtcIso } from "../../../shared/dates.ts";
+import { addDays, todayUtcIso } from "../../shared/dates.ts";
 import type {
     ActivityDay,
     BodyComposition,
@@ -12,7 +12,7 @@ import type {
     SleepNight,
     UserSettings,
     WeightEntry,
-} from "../../../shared/types.ts";
+} from "../../shared/types.ts";
 
 export async function getSettings(): Promise<UserSettings> {
     const rows = await sql<UserSettings[]>`

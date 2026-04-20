@@ -1,23 +1,13 @@
-// POST /functions/v1/mcp
+// POST /mcp
 //
 // Remote MCP server over the Streamable HTTP transport (stateless per
 // request). Claude.ai adds this URL as a custom connector; the bearer token
 // is supplied in the connector config. Uses your Claude Pro subscription
 // instead of the Anthropic API — no API billing.
-//
-// Spec: https://modelcontextprotocol.io/specification/2025-03-26/basic/transports
-// Supported methods:
-//   - initialize
-//   - notifications/initialized (no response)
-//   - tools/list
-//   - tools/call
-//
-// Each tool call is a short HTTP request; no long-lived SSE stream is needed
-// (fits comfortably inside Supabase Edge Function CPU limits).
 
-import { corsHeaders, preflight } from "../_shared/cors.ts";
-import { requireBearer } from "../_shared/auth.ts";
-import * as tools from "../_shared/tools.ts";
+import { corsHeaders, preflight } from "./_shared/cors.ts";
+import { requireBearer } from "./_shared/auth.ts";
+import * as tools from "./_shared/tools.ts";
 
 const PROTOCOL_VERSION = "2024-11-05";
 
@@ -235,7 +225,7 @@ async function handleRpc(msg: JsonRpcRequest): Promise<Record<string, unknown> |
             });
         case "notifications/initialized":
         case "notifications/cancelled":
-            return null; // notifications get no response
+            return null;
         case "ping":
             return rpcResult(msg.id, {});
         case "tools/list":
@@ -270,13 +260,10 @@ async function handleRpc(msg: JsonRpcRequest): Promise<Record<string, unknown> |
     }
 }
 
-Deno.serve(async (req) => {
+export async function handler(req: Request): Promise<Response> {
     const pre = preflight(req);
     if (pre) return pre;
 
-    // GET on the MCP endpoint is used by some clients to open an SSE stream
-    // for server-initiated messages. We don't push anything, so an empty
-    // stream or 405 both work; 405 keeps it dead simple and stateless.
     if (req.method === "GET") {
         return new Response("Method Not Allowed", { status: 405, headers: corsHeaders });
     }
@@ -297,7 +284,6 @@ Deno.serve(async (req) => {
         });
     }
 
-    // Support either a single JSON-RPC message or a batch.
     const messages: JsonRpcRequest[] = Array.isArray(body)
         ? (body as JsonRpcRequest[])
         : [body as JsonRpcRequest];
@@ -309,7 +295,6 @@ Deno.serve(async (req) => {
     }
 
     if (responses.length === 0) {
-        // All incoming messages were notifications — spec says 202 Accepted.
         return new Response(null, { status: 202, headers: corsHeaders });
     }
     const payload = Array.isArray(body) ? responses : responses[0];
@@ -317,4 +302,4 @@ Deno.serve(async (req) => {
         status: 200,
         headers: { "content-type": "application/json", ...corsHeaders },
     });
-});
+}

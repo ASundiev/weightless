@@ -6,5 +6,3 @@ dist
 *.log
 .DS_Store
 .vite
-supabase/.temp
-supabase/.branches

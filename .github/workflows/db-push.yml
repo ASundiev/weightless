@@ -1,10 +1,11 @@
-name: Push Supabase migrations
+name: Apply DB migrations
 
 on:
   push:
     branches: [main]
     paths:
-      - "supabase/migrations/**"
+      - "db/migrations/**"
+      - "db/migrate.ts"
       - ".github/workflows/db-push.yml"
   workflow_dispatch:
 
@@ -12,15 +13,11 @@ jobs:
   push:
     runs-on: ubuntu-latest
     env:
-      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
       - uses: actions/checkout@v4
-      - uses: supabase/setup-cli@v1
+      - uses: denoland/setup-deno@v2
         with:
-          version: latest
-      - name: Link project
-        run: supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+          deno-version: v2.x
       - name: Apply migrations
-        run: supabase db push --password "$SUPABASE_DB_PASSWORD"
+        run: deno run --allow-net --allow-env --allow-read db/migrate.ts

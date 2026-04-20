@@ -1,5 +1,5 @@
 // Local macOS bridge between Health Auto Export's iCloud folder and the
-// Supabase `ingest` Edge Function.
+// Deno Deploy `/ingest` endpoint.
 //
 // Watches $HAE_WATCH_DIR for new *.json files; POSTs each new file to
 // $FUNCTIONS_URL/ingest with the bearer token $WEIGHTLESS_TOKEN.

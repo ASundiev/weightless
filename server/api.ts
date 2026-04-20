@@ -1,15 +1,15 @@
-// POST /functions/v1/api
+// POST /api
 //
 // Thin JSON-RPC-ish router used by the SPA. Each request body is
 //   { tool: "<name>", args?: { ... } }
 // and the response is the tool's return value (or { error }).
 //
-// The same tool implementations are used by the MCP function, so Claude
-// and the UI can't disagree about the numbers.
+// Shares tool implementations with the MCP handler so Claude and the UI
+// can't disagree about the numbers.
 
-import { json, requireBearer } from "../_shared/auth.ts";
-import { preflight } from "../_shared/cors.ts";
-import * as tools from "../_shared/tools.ts";
+import { json, requireBearer } from "./_shared/auth.ts";
+import { preflight } from "./_shared/cors.ts";
+import * as tools from "./_shared/tools.ts";
 
 type ToolHandler = (args: Record<string, unknown>) => Promise<unknown>;
 
@@ -38,7 +38,7 @@ const handlers: Record<string, ToolHandler> = {
     list_experiments: () => tools.getExperiments(),
 };
 
-Deno.serve(async (req) => {
+export async function handler(req: Request): Promise<Response> {
     const pre = preflight(req);
     if (pre) return pre;
     if (req.method !== "POST") return json({ error: "POST only" }, 405);
@@ -61,4 +61,4 @@ Deno.serve(async (req) => {
     } catch (err) {
         return json({ error: String(err instanceof Error ? err.message : err) }, 500);
     }
-});
+}
