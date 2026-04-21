@@ -2,6 +2,9 @@
 //   - the local Mac sync script (POST /ingest),
 //   - the SPA (every /api call),
 //   - Claude.ai when you add the custom MCP connector.
+//
+// Claude.ai's custom-connector UI doesn't accept bearer headers directly,
+// so the MCP route also accepts the token as a ?token=… query param.
 
 import { corsHeaders } from "./cors.ts";
 
@@ -12,10 +15,14 @@ export function requireBearer(req: Request): Response | null {
     }
     const header = req.headers.get("authorization") ?? "";
     const prefix = "Bearer ";
-    if (!header.startsWith(prefix) || header.slice(prefix.length).trim() !== expected) {
-        return json({ error: "unauthorized" }, 401);
+    if (header.startsWith(prefix) && header.slice(prefix.length).trim() === expected) {
+        return null;
     }
-    return null;
+    const queryToken = new URL(req.url).searchParams.get("token");
+    if (queryToken && queryToken === expected) {
+        return null;
+    }
+    return json({ error: "unauthorized" }, 401);
 }
 
 export function json(body: unknown, status = 200): Response {
