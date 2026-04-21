@@ -31,13 +31,15 @@ await mkdir(processedDir, { recursive: true });
 console.log(`[weightless-sync] watching ${watchDir}`);
 console.log(`[weightless-sync] posting to ${functionsUrl}/ingest`);
 
-const watcher = chokidar.watch(`${watchDir}/*.json`, {
+const watcher = chokidar.watch(watchDir, {
     ignoreInitial: false,
     awaitWriteFinish: { stabilityThreshold: 1000, pollInterval: 200 },
     depth: 0,
 });
 
 watcher.on("add", async (file) => {
+    if (!file.endsWith(".json")) return;
+    if (path.dirname(file) !== watchDir) return;
     try {
         const body = await readFile(file, "utf8");
         const res = await fetch(`${functionsUrl}/ingest`, {
