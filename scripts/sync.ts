@@ -31,6 +31,25 @@ await mkdir(processedDir, { recursive: true });
 console.log(`[weightless-sync] watching ${watchDir}`);
 console.log(`[weightless-sync] posting to ${functionsUrl}/ingest`);
 
+// readFile can fail with EAGAIN when iCloud is still materializing the file.
+// Retry a few times before giving up.
+async function readFileWithRetry(file: string, attempts = 6): Promise<string> {
+    for (let i = 0; i < attempts; i++) {
+        try {
+            return await readFile(file, "utf8");
+        } catch (err) {
+            const code = (err as NodeJS.ErrnoException).code;
+            const errno = (err as NodeJS.ErrnoException).errno;
+            const transient = code === "EAGAIN" || errno === -11 || code === "EBUSY";
+            if (!transient || i === attempts - 1) throw err;
+            const delay = 500 * 2 ** i;
+            console.error(`[weightless-sync] ${path.basename(file)} ${code ?? errno} — retry in ${delay}ms`);
+            await new Promise((r) => setTimeout(r, delay));
+        }
+    }
+    throw new Error("unreachable");
+}
+
 const watcher = chokidar.watch(watchDir, {
     ignoreInitial: false,
     awaitWriteFinish: { stabilityThreshold: 1000, pollInterval: 200 },
@@ -41,7 +60,7 @@ watcher.on("add", async (file) => {
     if (!file.endsWith(".json")) return;
     if (path.dirname(file) !== watchDir) return;
     try {
-        const body = await readFile(file, "utf8");
+        const body = await readFileWithRetry(file);
         const res = await fetch(`${functionsUrl}/ingest`, {
             method: "POST",
             headers: {
